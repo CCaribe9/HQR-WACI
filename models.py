@@ -57,7 +57,7 @@ def HeterocedasticQuantileRegression(first_idx, df, alpha, by_hour, save_coefs=F
             dict_coefs['sup'].append(res.params['std_pred'])
         
     if save_coefs:
-        with open(f'dict_coefs_cfqra_alpha_{alpha}.pkl', 'wb') as f:
+        with open(f'dict_coefs_hqr_alpha_{alpha}.pkl', 'wb') as f:
             pickle.dump(dict_coefs, f)
 
     return preds_inf, preds_sup
