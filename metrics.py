@@ -6,6 +6,10 @@ plt.rcParams.update({
     "font.family": "serif"
 })
 
+
+color_by_method_dict = {'hqr': 'C0', 'qra': 'C1', 'cqr_hqr': 'C2', 'aci_hqr': 'C3', 'waci_hqr': 'C4'}
+label_by_method_dict = {'hqr': 'HQR', 'qra': 'QRA', 'cqr_hqr': 'CQR-HQR', 'aci_hqr': 'ACI-HQR', 'waci_hqr': 'WACI-HQR'}
+
 def winkler_score(y_true, upper_pred, lower_pred, alpha):
     lower_diff = lower_pred - y_true
     upper_diff = y_true - upper_pred
@@ -58,7 +62,7 @@ def coverage_by_interval_length_plot(df, models, alpha, quantile_step, bar_width
     ax.set_yticks(np.arange(10, 101, 5))
     ax.tick_params(axis='y', labelsize=12)
     for i in range(n):
-        ax.plot(x, bar_heights[i], '--o', label=models[i].upper())
+        ax.plot(x, bar_heights[i], '--o', label=label_by_method_dict[models[i]], color=color_by_method_dict[models[i]])
     ax.grid()
     ax.legend(loc='lower right', prop={'size': 14})
     ax.axhline(np.round(obj_coverage), color='k', lw=2)
@@ -70,7 +74,7 @@ def coverage_by_interval_length_plot(df, models, alpha, quantile_step, bar_width
     elif obj_coverage > 94:
         ax.set_ylim(obj_coverage-15, 100)
     elif obj_coverage > 89:
-        ax.set_ylim(obj_coverage-20, 100)
+        ax.set_ylim(obj_coverage-25, 100)
     else:
         ax.set_ylim(obj_coverage-35, 100)
     plt.tight_layout()
@@ -99,7 +103,7 @@ def error_by_interval_length_plot(df, models, quantile_step, alpha, bar_width = 
     ax.set_xticklabels(labels, fontsize=12, rotation=90)
     ax.tick_params(axis='y', labelsize=12)
     for i in range(n):
-        ax.plot(x, bar_heights[i], '--o', label=models[i].upper())
+        ax.plot(x, bar_heights[i], '--o', label=label_by_method_dict[models[i]], color=color_by_method_dict[models[i]])
     ax.grid()
     ax.legend(loc='lower right', prop={'size': 14})
     ax.set_title("MAE by interval length", fontsize=16)
@@ -116,7 +120,7 @@ def interval_length_distribution_plot(df, models, quantile_step, alpha):
     fig, ax = plt.subplots(figsize=(12, 6))
     n = len(models)
     for model in models:
-        ax.plot(np.arange(quantile_step, 1-quantile_step+0.0001, quantile_step), dict_lengths[model], "-o", label=model.upper())
+        ax.plot(np.arange(quantile_step, 1-quantile_step+0.0001, quantile_step), dict_lengths[model], "-o", label=label_by_method_dict[model], color=color_by_method_dict[model])
     ax.grid()
     ax.legend(loc='lower right', prop={'size': 14})
     ax.set_title("Interval length distribution", fontsize=16)
@@ -163,7 +167,7 @@ def coverage_by_hour_plot(df, models, alpha, bar_width = 0.1):
     else:
         ax.set_ylim(obj_coverage-12, 100)
     for i in range(n):
-        ax.plot(x, bar_heights[i], '--o', label=models[i].upper())
+        ax.plot(x, bar_heights[i], '--o', label=label_by_method_dict[models[i]], color=color_by_method_dict[models[i]])
     ax.grid()
     ax.legend(prop={'size': 14})
     ax.axhline(np.round(obj_coverage), color='k', lw=2)

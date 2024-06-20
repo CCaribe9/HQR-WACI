@@ -5,16 +5,15 @@ import numpy as np
 from copy import copy
 import pickle
 
-def CornishFisherQuantileRegressionAveraging(first_idx, df, alpha, by_hour, save_coefs=False):
+def HeterocedasticQuantileRegression(first_idx, df, alpha, by_hour, save_coefs=False):
     """
-    Perform Cornish-Fisher Quantile Regression Averaging.
+    Perform Heterocedastic Quantile Regression.
 
     Args:
         first_idx (int): The index of the first observation.
         df (pandas.DataFrame): The input dataframe containing the data.
         alpha (float): The objective miscoverage rate.
         by_hour (bool): Flag indicating whether to perform the calculation by hour.
-        save_coefs (bool, optional): Flag indicating whether to save the coefficients. Defaults to False.
 
     Returns:
         tuple: A tuple containing two lists: preds_inf and preds_sup.
@@ -27,7 +26,7 @@ def CornishFisherQuantileRegressionAveraging(first_idx, df, alpha, by_hour, save
     alpha_sup = 1 - alpha_inf
     if save_coefs:
         dict_coefs = {'sup': [], 'inf': []}
-    for obs in tqdm(range(first_idx, len(df)), desc=f'Cornish-Fisher Quantile Regression Averaging. By hours = {by_hour}'):
+    for obs in tqdm(range(first_idx, len(df)), desc=f'Heterocedastic Quantile Regression. By hours = {by_hour}'):
         if by_hour:
             df_cal = df[(df.index < obs) & (pd.to_datetime(df.date) < pd.to_datetime(df.loc[obs, 'date'])) & (df.hour == df.loc[obs, 'hour'])][['real', 'mean_pred', 'std_pred']]
             if len(df_cal) > 6*30:
@@ -73,7 +72,6 @@ def QuantileRegressionAveraging(first_idx, df, alpha, by_hour, m, save_coefs=Fal
         alpha (float): The objective miscoverage rate.
         by_hour (bool): Flag indicating whether to perform the calculation by hour.
         m (int): The number of predictors.
-        save_coefs (bool, optional): Flag indicating whether to save the coefficients. Defaults to False.
 
     Returns:
         tuple: A tuple containing two lists: preds_inf and preds_sup.

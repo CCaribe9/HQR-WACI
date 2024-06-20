@@ -4,7 +4,7 @@ import datetime as dt
 import os
 import warnings
 
-from models import (CornishFisherQuantileRegressionAveraging, 
+from models import (HeterocedasticQuantileRegression, 
                     QuantileRegressionAveraging,
                     ConformalizedQuantileRegression,
                     AdaptiveConformalInference,
@@ -29,15 +29,15 @@ alphas = [0.01, 0.05, 0.1, 0.2]
 
 for alpha in alphas:
     if not os.path.isfile(f"Data//df_quantile_regression_alpha_{alpha}.csv"):
-        # Cornish-Fisher Quantile Regression Averaging
-        preds_inf_cfqra, preds_sup_cfqra = CornishFisherQuantileRegressionAveraging(idx_first_date_qr, df, alpha, by_hour=False, save_coefs=True)
-        df.loc[df.tail(len(preds_inf_cfqra)).index, 'preds_inf_cfqra'] = preds_inf_cfqra
-        df.loc[df.tail(len(preds_sup_cfqra)).index, 'preds_sup_cfqra'] = preds_sup_cfqra
+        # Heterocedastic Quantile Regression
+        preds_inf_hqr, preds_sup_hqr = HeterocedasticQuantileRegression(idx_first_date_qr, df, alpha, by_hour=False, save_coefs=True)
+        df.loc[df.tail(len(preds_inf_hqr)).index, 'preds_inf_hqr'] = preds_inf_hqr
+        df.loc[df.tail(len(preds_sup_hqr)).index, 'preds_sup_hqr'] = preds_sup_hqr
 
-        # Cornish-Fisher Quantile Regression Averaging by hour
-        preds_inf_cfqra_by_hour, preds_sup_cfqra_by_hour = CornishFisherQuantileRegressionAveraging(idx_first_date_qr, df, alpha, by_hour=True)
-        df.loc[df.tail(len(preds_inf_cfqra_by_hour)).index, 'preds_inf_cfqra_by_hour'] = preds_inf_cfqra_by_hour
-        df.loc[df.tail(len(preds_sup_cfqra_by_hour)).index, 'preds_sup_cfqra_by_hour'] = preds_sup_cfqra_by_hour
+        # Heterocedastic Quantile Regression by hour
+        preds_inf_hqr_by_hour, preds_sup_hqr_by_hour = HeterocedasticQuantileRegression(idx_first_date_qr, df, alpha, by_hour=True)
+        df.loc[df.tail(len(preds_inf_hqr_by_hour)).index, 'preds_inf_hqr_by_hour'] = preds_inf_hqr_by_hour
+        df.loc[df.tail(len(preds_sup_hqr_by_hour)).index, 'preds_sup_hqr_by_hour'] = preds_sup_hqr_by_hour
 
         # Quantile Regression Averaging
         preds_inf_qra, preds_sup_qra = QuantileRegressionAveraging(idx_first_date_qr, df, alpha, m=m, by_hour=False)
@@ -52,24 +52,24 @@ for alpha in alphas:
         # Save the dataframe (just in case)
         df.to_csv(f"Data//df_quantile_regression_alpha_{alpha}.csv", index=False)
     else:
-        # df = pd.read_csv(f"Data//df_quantile_regression_alpha_{alpha}.csv")
-        df = pd.read_csv(f"Data//df_final_alpha_{alpha}.csv")
+        df = pd.read_csv(f"Data//df_quantile_regression_alpha_{alpha}.csv")
+        # df = pd.read_csv(f"Data//df_final_alpha_{alpha}.csv")
         df['full_date'] = pd.to_datetime(df.full_date)
 
-    df['length_cfqra'] = df['preds_sup_cfqra'] - df['preds_inf_cfqra']
-    df['length_cfqra_by_hour'] = df['preds_sup_cfqra_by_hour'] - df['preds_inf_cfqra_by_hour']
+    df['length_hqr'] = df['preds_sup_hqr'] - df['preds_inf_hqr']
+    df['length_hqr_by_hour'] = df['preds_sup_hqr_by_hour'] - df['preds_inf_hqr_by_hour']
     df['length_qra'] = df['preds_sup_qra'] - df['preds_inf_qra']
     df['length_qra_by_hour'] = df['preds_sup_qra_by_hour'] - df['preds_inf_qra_by_hour']
 
-    # Conformalized Quantile Regression over CFQRA
-    preds_inf_cqr_cfqra, preds_sup_cqr_cfqra = ConformalizedQuantileRegression(idx_date_test, df, alpha, method='cfqra', by_hour=False)
-    df.loc[df.tail(len(preds_inf_cqr_cfqra)).index, 'preds_inf_cqr_cfqra'] = preds_inf_cqr_cfqra
-    df.loc[df.tail(len(preds_sup_cqr_cfqra)).index, 'preds_sup_cqr_cfqra'] = preds_sup_cqr_cfqra
+    # Conformalized Quantile Regression over HQR
+    preds_inf_cqr_hqr, preds_sup_cqr_hqr = ConformalizedQuantileRegression(idx_date_test, df, alpha, method='hqr', by_hour=False)
+    df.loc[df.tail(len(preds_inf_cqr_hqr)).index, 'preds_inf_cqr_hqr'] = preds_inf_cqr_hqr
+    df.loc[df.tail(len(preds_sup_cqr_hqr)).index, 'preds_sup_cqr_hqr'] = preds_sup_cqr_hqr
 
-    # Conformalized Quantile Regression over CFQRA by hour
-    preds_inf_cqr_cfqra_by_hour, preds_sup_cqr_cfqra_by_hour = ConformalizedQuantileRegression(idx_date_test, df, alpha, method='cfqra', by_hour=True)
-    df.loc[df.tail(len(preds_inf_cqr_cfqra_by_hour)).index, 'preds_inf_cqr_cfqra_by_hour'] = preds_inf_cqr_cfqra_by_hour
-    df.loc[df.tail(len(preds_sup_cqr_cfqra_by_hour)).index, 'preds_sup_cqr_cfqra_by_hour'] = preds_sup_cqr_cfqra_by_hour
+    # Conformalized Quantile Regression over HQR by hour
+    preds_inf_cqr_hqr_by_hour, preds_sup_cqr_hqr_by_hour = ConformalizedQuantileRegression(idx_date_test, df, alpha, method='hqr', by_hour=True)
+    df.loc[df.tail(len(preds_inf_cqr_hqr_by_hour)).index, 'preds_inf_cqr_hqr_by_hour'] = preds_inf_cqr_hqr_by_hour
+    df.loc[df.tail(len(preds_sup_cqr_hqr_by_hour)).index, 'preds_sup_cqr_hqr_by_hour'] = preds_sup_cqr_hqr_by_hour
 
     # Conformalized Quantile Regression over QRA
     preds_inf_cqr_qra, preds_sup_cqr_qra = ConformalizedQuantileRegression(idx_date_test, df, alpha, method='qra', by_hour=False)
@@ -81,15 +81,15 @@ for alpha in alphas:
     df.loc[df.tail(len(preds_inf_cqr_qra_by_hour)).index, 'preds_inf_cqr_qra_by_hour'] = preds_inf_cqr_qra_by_hour
     df.loc[df.tail(len(preds_sup_cqr_qra_by_hour)).index, 'preds_sup_cqr_qra_by_hour'] = preds_sup_cqr_qra_by_hour
 
-    # Adaptive Conformal Inference over CFQRA
-    preds_inf_aci_cfqra, preds_sup_aci_cfqra = AdaptiveConformalInference(idx_date_test, df, alpha, gamma=0.02, method='cfqra', by_hour=False, save_alphas=True)
-    df.loc[df.tail(len(preds_inf_aci_cfqra)).index, 'preds_inf_aci_cfqra'] = preds_inf_aci_cfqra
-    df.loc[df.tail(len(preds_sup_aci_cfqra)).index, 'preds_sup_aci_cfqra'] = preds_sup_aci_cfqra
+    # Adaptive Conformal Inference over HQR
+    preds_inf_aci_hqr, preds_sup_aci_hqr = AdaptiveConformalInference(idx_date_test, df, alpha, gamma=0.02, method='hqr', by_hour=False, save_alphas=True)
+    df.loc[df.tail(len(preds_inf_aci_hqr)).index, 'preds_inf_aci_hqr'] = preds_inf_aci_hqr
+    df.loc[df.tail(len(preds_sup_aci_hqr)).index, 'preds_sup_aci_hqr'] = preds_sup_aci_hqr
 
-    # Adaptive Conformal Inference over CFQRA by hour
-    preds_inf_aci_cfqra_by_hour, preds_sup_aci_cfqra_by_hour = AdaptiveConformalInference(idx_date_test, df, alpha, gamma=0.02, method='cfqra', by_hour=True)
-    df.loc[df.tail(len(preds_inf_aci_cfqra_by_hour)).index, 'preds_inf_aci_cfqra_by_hour'] = preds_inf_aci_cfqra_by_hour
-    df.loc[df.tail(len(preds_sup_aci_cfqra_by_hour)).index, 'preds_sup_aci_cfqra_by_hour'] = preds_sup_aci_cfqra_by_hour
+    # Adaptive Conformal Inference over HQR by hour
+    preds_inf_aci_hqr_by_hour, preds_sup_aci_hqr_by_hour = AdaptiveConformalInference(idx_date_test, df, alpha, gamma=0.02, method='hqr', by_hour=True)
+    df.loc[df.tail(len(preds_inf_aci_hqr_by_hour)).index, 'preds_inf_aci_hqr_by_hour'] = preds_inf_aci_hqr_by_hour
+    df.loc[df.tail(len(preds_sup_aci_hqr_by_hour)).index, 'preds_sup_aci_hqr_by_hour'] = preds_sup_aci_hqr_by_hour
 
     # Adaptive Conformal Inference over QRA
     preds_inf_aci_qra, preds_sup_aci_qra = AdaptiveConformalInference(idx_date_test, df, alpha, gamma=0.02, method='qra', by_hour=False)
@@ -101,15 +101,15 @@ for alpha in alphas:
     df.loc[df.tail(len(preds_inf_aci_qra_by_hour)).index, 'preds_inf_aci_qra_by_hour'] = preds_inf_aci_qra_by_hour
     df.loc[df.tail(len(preds_sup_aci_qra_by_hour)).index, 'preds_sup_aci_qra_by_hour'] = preds_sup_aci_qra_by_hour
         
-    # Width Adaptive Conformal Inference over CFQRA
-    preds_inf_waci_cfqra, preds_sup_waci_cfqra = WidthAdaptiveConformalInference(idx_date_test, df, alpha, gamma = 0.02, sigma=3, method='cfqra', by_hour=False, save_alphas=True)
-    df.loc[df.tail(len(preds_inf_waci_cfqra)).index, 'preds_inf_waci_cfqra'] = preds_inf_waci_cfqra
-    df.loc[df.tail(len(preds_sup_waci_cfqra)).index, 'preds_sup_waci_cfqra'] = preds_sup_waci_cfqra
+    # Width Adaptive Conformal Inference over HQR
+    preds_inf_waci_hqr, preds_sup_waci_hqr = WidthAdaptiveConformalInference(idx_date_test, df, alpha, gamma = 0.02, sigma=3, method='hqr', by_hour=False, save_alphas=True)
+    df.loc[df.tail(len(preds_inf_waci_hqr)).index, 'preds_inf_waci_hqr'] = preds_inf_waci_hqr
+    df.loc[df.tail(len(preds_sup_waci_hqr)).index, 'preds_sup_waci_hqr'] = preds_sup_waci_hqr
 
-    # Width Adaptive Conformal Inference over CFQRA by hour
-    preds_inf_waci_cfqra_by_hour, preds_sup_waci_cfqra_by_hour = WidthAdaptiveConformalInference(idx_date_test, df, alpha, gamma = 0.02, sigma=3, method='cfqra', by_hour=True)
-    df.loc[df.tail(len(preds_inf_waci_cfqra_by_hour)).index, 'preds_inf_waci_cfqra_by_hour'] = preds_inf_waci_cfqra_by_hour
-    df.loc[df.tail(len(preds_sup_waci_cfqra_by_hour)).index, 'preds_sup_waci_cfqra_by_hour'] = preds_sup_waci_cfqra_by_hour
+    # Width Adaptive Conformal Inference over HQR by hour
+    preds_inf_waci_hqr_by_hour, preds_sup_waci_hqr_by_hour = WidthAdaptiveConformalInference(idx_date_test, df, alpha, gamma = 0.02, sigma=3, method='hqr', by_hour=True)
+    df.loc[df.tail(len(preds_inf_waci_hqr_by_hour)).index, 'preds_inf_waci_hqr_by_hour'] = preds_inf_waci_hqr_by_hour
+    df.loc[df.tail(len(preds_sup_waci_hqr_by_hour)).index, 'preds_sup_waci_hqr_by_hour'] = preds_sup_waci_hqr_by_hour
 
     # Width Adaptive Conformal Inference over QRA
     preds_inf_waci_qra, preds_sup_waci_qra = WidthAdaptiveConformalInference(idx_date_test, df, alpha, gamma = 0.02, sigma=3, method='qra', by_hour=False)
@@ -121,15 +121,15 @@ for alpha in alphas:
     df.loc[df.tail(len(preds_inf_waci_qra_by_hour)).index, 'preds_inf_waci_qra_by_hour'] = preds_inf_waci_qra_by_hour
     df.loc[df.tail(len(preds_sup_waci_qra_by_hour)).index, 'preds_sup_waci_qra_by_hour'] = preds_sup_waci_qra_by_hour
 
-    # # Width Adaptive Conformal Inference 2 over CFQRA
-    # preds_inf_waci_2_cfqra, preds_sup_waci_2_cfqra = WidthAdaptiveConformalInference_2(idx_date_test, df, alpha, gamma=0.02, method='cfqra', by_hour=False, save_alphas=True, rate=1.02)
-    # df.loc[df.tail(len(preds_inf_waci_2_cfqra)).index, 'preds_inf_waci_2_cfqra'] = preds_inf_waci_2_cfqra
-    # df.loc[df.tail(len(preds_sup_waci_2_cfqra)).index, 'preds_sup_waci_2_cfqra'] = preds_sup_waci_2_cfqra
+    # # Width Adaptive Conformal Inference 2 over HQR
+    # preds_inf_waci_2_hqr, preds_sup_waci_2_hqr = WidthAdaptiveConformalInference_2(idx_date_test, df, alpha, gamma=0.02, method='hqr', by_hour=False, save_alphas=True, rate=1.02)
+    # df.loc[df.tail(len(preds_inf_waci_2_hqr)).index, 'preds_inf_waci_2_hqr'] = preds_inf_waci_2_hqr
+    # df.loc[df.tail(len(preds_sup_waci_2_hqr)).index, 'preds_sup_waci_2_hqr'] = preds_sup_waci_2_hqr
 
-    # # Width Adaptive Conformal Inference 2 over CFQRA by hour
-    # preds_inf_waci_2_cfqra_by_hour, preds_sup_waci_2_cfqra_by_hour = WidthAdaptiveConformalInference_2(idx_date_test, df, alpha, gamma=0.02, method='cfqra', by_hour=True, rate=1.02)
-    # df.loc[df.tail(len(preds_inf_waci_2_cfqra_by_hour)).index, 'preds_inf_waci_2_cfqra_by_hour'] = preds_inf_waci_2_cfqra_by_hour
-    # df.loc[df.tail(len(preds_sup_waci_2_cfqra_by_hour)).index, 'preds_sup_waci_2_cfqra_by_hour'] = preds_sup_waci_2_cfqra_by_hour
+    # # Width Adaptive Conformal Inference 2 over HQR by hour
+    # preds_inf_waci_2_hqr_by_hour, preds_sup_waci_2_hqr_by_hour = WidthAdaptiveConformalInference_2(idx_date_test, df, alpha, gamma=0.02, method='hqr', by_hour=True, rate=1.02)
+    # df.loc[df.tail(len(preds_inf_waci_2_hqr_by_hour)).index, 'preds_inf_waci_2_hqr_by_hour'] = preds_inf_waci_2_hqr_by_hour
+    # df.loc[df.tail(len(preds_sup_waci_2_hqr_by_hour)).index, 'preds_sup_waci_2_hqr_by_hour'] = preds_sup_waci_2_hqr_by_hour
 
     # # Width Adaptive Conformal Inference 2 over QRA
     # preds_inf_waci_2_qra, preds_sup_waci_2_qra = WidthAdaptiveConformalInference_2(idx_date_test, df, alpha, gamma=0.02, method='qra', by_hour=False, rate=1.02)

@@ -4,7 +4,7 @@ import datetime as dt
 import os
 import warnings
 
-from models_wind import (CornishFisherQuantileRegressionAveraging, 
+from models_wind import (HeterocedasticQuantileRegression, 
                     QuantileRegressionAveraging,
                     ConformalizedQuantileRegression,
                     AdaptiveConformalInference,
@@ -28,10 +28,10 @@ alphas = [0.2, 0.1, 0.05, 0.01]
 
 for alpha in alphas:
     if not not os.path.isfile(f"Data//df_quantile_regression_wind_alpha_{alpha}.csv"):
-        # Cornish-Fisher Quantile Regression Averaging
-        preds_inf_cfqra, preds_sup_cfqra = CornishFisherQuantileRegressionAveraging(idx_first_date_qr, df, alpha, by_hour=False, save_coefs=True)
-        df.loc[df.tail(len(preds_inf_cfqra)).index, 'preds_inf_cfqra'] = preds_inf_cfqra
-        df.loc[df.tail(len(preds_sup_cfqra)).index, 'preds_sup_cfqra'] = preds_sup_cfqra
+        # Heterocedastic Quantile Regression
+        preds_inf_hqr, preds_sup_hqr = HeterocedasticQuantileRegression(idx_first_date_qr, df, alpha, by_hour=False, save_coefs=True)
+        df.loc[df.tail(len(preds_inf_hqr)).index, 'preds_inf_hqr'] = preds_inf_hqr
+        df.loc[df.tail(len(preds_sup_hqr)).index, 'preds_sup_hqr'] = preds_sup_hqr
 
         # Quantile Regression Averaging
         preds_inf_qra, preds_sup_qra = QuantileRegressionAveraging(idx_first_date_qr, df, alpha, m=m, by_hour=False, save_coefs=True)
@@ -45,33 +45,33 @@ for alpha in alphas:
         # df = pd.read_csv(f"Data//df_final_wind_alpha_{alpha}.csv")
         df['full_date'] = pd.to_datetime(df.full_date)
 
-    df['length_cfqra'] = df['preds_sup_cfqra'] - df['preds_inf_cfqra']
+    df['length_hqr'] = df['preds_sup_hqr'] - df['preds_inf_hqr']
     df['length_qra'] = df['preds_sup_qra'] - df['preds_inf_qra']
 
-    # Conformalized Quantile Regression over CFQRA
-    preds_inf_cqr_cfqra, preds_sup_cqr_cfqra = ConformalizedQuantileRegression(idx_date_test, df, alpha, method='cfqra', by_hour=False)
-    df.loc[df.tail(len(preds_inf_cqr_cfqra)).index, 'preds_inf_cqr_cfqra'] = preds_inf_cqr_cfqra
-    df.loc[df.tail(len(preds_sup_cqr_cfqra)).index, 'preds_sup_cqr_cfqra'] = preds_sup_cqr_cfqra
+    # Conformalized Quantile Regression over HQR
+    preds_inf_cqr_hqr, preds_sup_cqr_hqr = ConformalizedQuantileRegression(idx_date_test, df, alpha, method='hqr', by_hour=False)
+    df.loc[df.tail(len(preds_inf_cqr_hqr)).index, 'preds_inf_cqr_hqr'] = preds_inf_cqr_hqr
+    df.loc[df.tail(len(preds_sup_cqr_hqr)).index, 'preds_sup_cqr_hqr'] = preds_sup_cqr_hqr
 
     # Conformalized Quantile Regression over QRA
     preds_inf_cqr_qra, preds_sup_cqr_qra = ConformalizedQuantileRegression(idx_date_test, df, alpha, method='qra', by_hour=False)
     df.loc[df.tail(len(preds_inf_cqr_qra)).index, 'preds_inf_cqr_qra'] = preds_inf_cqr_qra
     df.loc[df.tail(len(preds_sup_cqr_qra)).index, 'preds_sup_cqr_qra'] = preds_sup_cqr_qra
 
-    # Adaptive Conformal Inference over CFQRA
-    preds_inf_aci_cfqra, preds_sup_aci_cfqra = AdaptiveConformalInference(idx_date_test, df, alpha, gamma=0.02, method='cfqra', by_hour=False)
-    df.loc[df.tail(len(preds_inf_aci_cfqra)).index, 'preds_inf_aci_cfqra'] = preds_inf_aci_cfqra
-    df.loc[df.tail(len(preds_sup_aci_cfqra)).index, 'preds_sup_aci_cfqra'] = preds_sup_aci_cfqra
+    # Adaptive Conformal Inference over HQR
+    preds_inf_aci_hqr, preds_sup_aci_hqr = AdaptiveConformalInference(idx_date_test, df, alpha, gamma=0.02, method='hqr', by_hour=False)
+    df.loc[df.tail(len(preds_inf_aci_hqr)).index, 'preds_inf_aci_hqr'] = preds_inf_aci_hqr
+    df.loc[df.tail(len(preds_sup_aci_hqr)).index, 'preds_sup_aci_hqr'] = preds_sup_aci_hqr
 
     # Adaptive Conformal Inference over QRA
     preds_inf_aci_qra, preds_sup_aci_qra = AdaptiveConformalInference(idx_date_test, df, alpha, gamma=0.02, method='qra', by_hour=False)
     df.loc[df.tail(len(preds_inf_aci_qra)).index, 'preds_inf_aci_qra'] = preds_inf_aci_qra
     df.loc[df.tail(len(preds_sup_aci_qra)).index, 'preds_sup_aci_qra'] = preds_sup_aci_qra
         
-    # Width Adaptive Conformal Inference over CFQRA
-    preds_inf_waci_cfqra, preds_sup_waci_cfqra = WidthAdaptiveConformalInference(idx_date_test, df, alpha, gamma = 0.02, sigma=0.5, method='cfqra', by_hour=False)
-    df.loc[df.tail(len(preds_inf_waci_cfqra)).index, 'preds_inf_waci_cfqra'] = preds_inf_waci_cfqra
-    df.loc[df.tail(len(preds_sup_waci_cfqra)).index, 'preds_sup_waci_cfqra'] = preds_sup_waci_cfqra
+    # Width Adaptive Conformal Inference over HQR
+    preds_inf_waci_hqr, preds_sup_waci_hqr = WidthAdaptiveConformalInference(idx_date_test, df, alpha, gamma = 0.02, sigma=0.5, method='hqr', by_hour=False)
+    df.loc[df.tail(len(preds_inf_waci_hqr)).index, 'preds_inf_waci_hqr'] = preds_inf_waci_hqr
+    df.loc[df.tail(len(preds_sup_waci_hqr)).index, 'preds_sup_waci_hqr'] = preds_sup_waci_hqr
 
     # Width Adaptive Conformal Inference over QRA
     preds_inf_waci_qra, preds_sup_waci_qra = WidthAdaptiveConformalInference(idx_date_test, df, alpha, gamma = 0.02, sigma=0.5, method='qra', by_hour=False)

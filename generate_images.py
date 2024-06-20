@@ -15,7 +15,7 @@ plt.rcParams.update({
 
 def generate_expected_error_3d_plot():
     d = dirname(abspath(__file__))
-    # Define the parameters for the three normal distributions
+
     mu1 = np.array([-1., 2.])
     sigma1 = np.array([[1., .5], [.5, 1.]])
 
@@ -25,11 +25,10 @@ def generate_expected_error_3d_plot():
     mu3 = np.array([-2., -2.])
     sigma3 = np.array([[0.5, .2], [.2, 0.5]])
 
-    # Generate the grid
     x = np.linspace(-5, 5, 100)
     y = np.linspace(-5, 5, 100)
     x, y = np.meshgrid(x, y)
-    # Generate the normal distributions
+
     rv1 = multivariate_normal(mu1, sigma1)
     rv2 = multivariate_normal(mu2, sigma2)
     rv3 = multivariate_normal(mu3, sigma3)
@@ -42,24 +41,20 @@ def generate_expected_error_3d_plot():
     pos = np.dstack((x, y))
 
 
-    # Create the 3D plot of the distributions
     fig = plt.figure(figsize=(12, 6))
     ax1 = fig.add_subplot(121, projection='3d')
     ax1.plot_surface(x, y, z, cmap='viridis')
     ax1.set_title("Distribution of explanatory features", fontsize=14, fontname='serif')
 
-    # Create the complementary distribution
     z2 = 1 - z
     z2 = (z2 - np.min(z2)) / (np.max(z2) - np.min(z2))
 
-    # Create the 3D plot of the complementary distribution
     ax2 = fig.add_subplot(122, projection='3d')
     ax2.plot_surface(x, y, z2, cmap='viridis')
     ax2.set_title("Expected error of a point forecaster by region", fontsize=14, fontname='serif')
 
-    # Set the z axis ticks and labels
-    ax2.set_zticks([0, 0.2, 0.4, 0.6, 0.8, 1])
-    ax2.set_zticklabels(["  Min Error", "   20\% Max Error", "  40\% Max Error", "  60\% Max Error", "  80\% Max Error", "  Max Error"], fontsize=10)
+    ax2.set_zticks([0, 1])
+    ax2.set_zticklabels(["  Min Error", "  Max Error"], fontsize=10)
     # plt.show()
     plt.savefig(d + "\\Images\\expected_error_3d_plot.pdf")
 
@@ -79,7 +74,6 @@ def generate_day_ahead_market_figure(test_date=dt.datetime(2022, 10, 5)):
     ax.set_xlabel("Date", fontsize=12)
     ax.set_ylabel("Price (€/MWh)", fontsize=12)
 
-    # Add text and arrow
     ax.text(test_date - dt.timedelta(days=15), 650, "Quantile Regression predictions", ha='right', va='top', rotation=0, fontsize=11)
     ax.annotate("", xy=(test_date - dt.timedelta(days=5), 610), xytext=(test_date - dt.timedelta(days=6*30), 610),
                 arrowprops=dict(arrowstyle="->"))
@@ -185,7 +179,6 @@ def generate_wind_power_figure(test_date=dt.datetime(2021, 1, 1)):
     ax.set_xlabel("Date", fontsize=12)
     ax.set_ylabel("GWh", fontsize=12)
 
-    # Add text and arrow
     ax.text(test_date - dt.timedelta(days=15), 19, "Quantile Regression predictions", ha='right', va='top', rotation=0, fontsize=8)
     ax.annotate("", xy=(test_date - dt.timedelta(days=5), 18.25), xytext=(test_date - dt.timedelta(days=6*30), 18.25),
                 arrowprops=dict(arrowstyle="->"))
@@ -322,39 +315,37 @@ def generate_coefs_variation_wind():
     # plt.show()
     plt.savefig(d+"\\Images\\coefs_variation_wind.pdf")
 
-# def generate_progression_alphas_2(hour=13):
-#     d = dirname(abspath(__file__))
-#     with open('dict_list_alphas_aci.pkl', 'rb') as file:
-#         list_alphas_aci = pickle.load(file)
+def generate_progression_alphas_2(hour=13):
+    d = dirname(abspath(__file__))
+    with open('dict_list_alphas_aci.pkl', 'rb') as file:
+        list_alphas_aci = pickle.load(file)
 
-#     with open('dict_list_alphas_waci.pkl', 'rb') as file:
-#         list_alphas_waci = pickle.load(file)
+    with open('dict_list_alphas_waci.pkl', 'rb') as file:
+        list_alphas_waci = pickle.load(file)
     
-#     with open('dict_list_alphas_waci_2.pkl', 'rb') as file:
-#         list_alphas_waci_2 = pickle.load(file)
+    with open('dict_list_alphas_waci_2.pkl', 'rb') as file:
+        list_alphas_waci_2 = pickle.load(file)
 
-#     list_alphas_aci = list_alphas_aci[hour]
-#     list_alphas_waci = list_alphas_waci[hour]
-#     list_alphas_waci_2 = list_alphas_waci_2[hour]
+    list_alphas_aci = list_alphas_aci[hour]
+    list_alphas_waci = list_alphas_waci[hour]
+    list_alphas_waci_2 = list_alphas_waci_2[hour]
 
-#     for i in range(len(list_alphas_aci)):
-#         fig, ax = plt.subplots(1, 1, figsize=(10, 4))
-#         ax.axhline(0.2, xmin= 0, xmax=500, lw=1, color='k', linestyle='--', label='Objective miscoverage', alpha=0.4)
-#         ax.plot(np.arange(0, 500, 0.1), list_alphas_waci[i], color=colors[0], label='WACI', lw=1)
-#         ax.plot(np.arange(0, 500, 0.1), list_alphas_waci_2[i], color=colors[1], label='WACI 2', lw=1)
-#         ax.axhline(list_alphas_aci[i], xmin= 0, xmax=500, lw=1, color=colors[2], label='ACI')
-#         ax.set_xlabel('Interval length', fontsize=14)
-#         ax.set_ylabel("$\\alpha_t$", fontsize=14)
-#         ax.grid()
-#         ax.set_ylim(0.1, 0.3)
-#         ax.set_xlim(0, 100)
-#         ax.legend(prop={'size': 14})
-#         ax.tick_params(axis='x', labelsize=12)
-#         ax.tick_params(axis='y', labelsize=12)
-#         plt.tight_layout()
-#         plt.savefig(d + f"\\Images\\alpha_progression_2\\alpha_progression_hour{hour}_{i}.pdf")
-
-
+    for i in range(len(list_alphas_aci)):
+        fig, ax = plt.subplots(1, 1, figsize=(10, 4))
+        ax.axhline(0.2, xmin= 0, xmax=500, lw=1, color='k', linestyle='--', label='Objective miscoverage', alpha=0.4)
+        ax.plot(np.arange(0, 500, 0.1), list_alphas_waci[i], color=colors[0], label='WACI', lw=1)
+        ax.plot(np.arange(0, 500, 0.1), list_alphas_waci_2[i], color=colors[1], label='WACI 2', lw=1)
+        ax.axhline(list_alphas_aci[i], xmin= 0, xmax=500, lw=1, color=colors[2], label='ACI')
+        ax.set_xlabel('Interval length', fontsize=14)
+        ax.set_ylabel("$\\alpha_t$", fontsize=14)
+        ax.grid()
+        ax.set_ylim(0.1, 0.3)
+        ax.set_xlim(0, 100)
+        ax.legend(prop={'size': 14})
+        ax.tick_params(axis='x', labelsize=12)
+        ax.tick_params(axis='y', labelsize=12)
+        plt.tight_layout()
+        plt.savefig(d + f"\\Images\\alpha_progression_2\\alpha_progression_hour{hour}_{i}.pdf")
 
 # generate_expected_error_3d_plot()
 # generate_day_ahead_market_figure()
